@@ -1,0 +1,5 @@
+defaultNamespace: my-website
+targetCustomizations:
+  - name: website-deployment
+    clusterSelector: {} 
+    path: "./fleet" 
