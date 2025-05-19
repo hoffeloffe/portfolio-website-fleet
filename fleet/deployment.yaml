@@ -5,6 +5,8 @@ metadata:
 spec:
   # Reduce to 1 replica to ensure it can run on limited hardware
   replicas: 1
+  # Extend the progress deadline to give more time for pod startup on Pi hardware
+  progressDeadlineSeconds: 600
   selector:
     matchLabels:
       app: my-website
@@ -37,28 +39,32 @@ spec:
           ports:
             - containerPort: 3000
           # Add back probes now that we know container starts properly
+          # Ultra-lenient startup probe to give container plenty of time to initialize
+          startupProbe:
+            tcpSocket:
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 10
+          # Simple readiness probe once startup is complete
           readinessProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 40
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 4
+            periodSeconds: 10
+            failureThreshold: 3
+          # Simple liveness probe only after startup is complete
           livenessProbe:
             tcpSocket:
               port: 3000
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 5
+            periodSeconds: 20
             failureThreshold: 3
-          # Ultra lightweight resources for Raspberry Pi
+          # Increased resources for Raspberry Pi
           resources:
             limits:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: "256Mi"
+              cpu: "200m"
             requests:
-              memory: "32Mi"
-              cpu: "30m"
+              memory: "64Mi"
+              cpu: "50m"
           # Use this for debugging
           imagePullPolicy: Always
           # Environment variables
@@ -67,3 +73,5 @@ spec:
               value: "production"
             - name: PORT
               value: "3000"  # Explicitly set the port in case app looks for this env var
+          # Add termination grace period to ensure clean shutdown
+          terminationGracePeriodSeconds: 30
