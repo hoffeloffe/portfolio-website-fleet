@@ -36,7 +36,21 @@ spec:
           image: "hoffeloffe/my-portfolio:latest"
           ports:
             - containerPort: 3000
-          # Remove probes temporarily to debug underlying issue
+          # Add back probes now that we know container starts properly
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 40
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 4
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
           # Ultra lightweight resources for Raspberry Pi
           resources:
             limits:
