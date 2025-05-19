@@ -8,42 +8,48 @@ spec:
   selector:
     matchLabels:
       app: my-website
+  strategy:
+    type: Recreate  # Avoid having multiple versions during rollout on limited hardware
   template:
     metadata:
       labels:
         app: my-website
     spec:
+      # Tolerations for potential taints on the Pi nodes
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      # Try harder to fit this workload on the platform
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - arm
+                - arm64
       containers:
         - name: my-website
           image: "hoffeloffe/my-portfolio:latest"
           ports:
             - containerPort: 3000
-          # Simple TCP check to verify the port is open
-          startupProbe:
-            tcpSocket:
-              port: 3000
-            initialDelaySeconds: 20
-            periodSeconds: 10
-            failureThreshold: 30
-          # Simple TCP check for readiness
-          readinessProbe:
-            tcpSocket:
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6
+          # Remove probes temporarily to debug underlying issue
           # Ultra lightweight resources for Raspberry Pi
           resources:
             limits:
-              memory: "150Mi"
-              cpu: "200m"
+              memory: "128Mi"
+              cpu: "100m"
             requests:
-              memory: "50Mi"
-              cpu: "50m"
-          # Avoid repeatedly pulling the same image
-          imagePullPolicy: IfNotPresent
+              memory: "32Mi"
+              cpu: "30m"
+          # Use this for debugging
+          imagePullPolicy: Always
           # Environment variables
           env:
             - name: NODE_ENV
               value: "production"
+            - name: PORT
+              value: "3000"  # Explicitly set the port in case app looks for this env var
