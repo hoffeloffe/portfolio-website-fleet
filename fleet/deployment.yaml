@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: my-website
 spec:
-  replicas: 2
+  # Reduce to 1 replica to ensure it can run on limited hardware
+  replicas: 1
   selector:
     matchLabels:
       app: my-website
@@ -17,25 +18,32 @@ spec:
           image: "hoffeloffe/my-portfolio:latest"
           ports:
             - containerPort: 3000
-          readinessProbe:
-            httpGet:
-              path: /
+          # Simple TCP check to verify the port is open
+          startupProbe:
+            tcpSocket:
               port: 3000
-            initialDelaySeconds: 15
-            periodSeconds: 5
-            timeoutSeconds: 2
-          livenessProbe:
-            httpGet:
-              path: /
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 30
+          # Simple TCP check for readiness
+          readinessProbe:
+            tcpSocket:
               port: 3000
             initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 3
+            timeoutSeconds: 5
+            failureThreshold: 6
+          # Ultra lightweight resources for Raspberry Pi
           resources:
             limits:
-              memory: "256Mi"
-              cpu: "500m"
+              memory: "150Mi"
+              cpu: "200m"
             requests:
-              memory: "128Mi"
-              cpu: "250m"
-          imagePullPolicy: Always
+              memory: "50Mi"
+              cpu: "50m"
+          # Avoid repeatedly pulling the same image
+          imagePullPolicy: IfNotPresent
+          # Environment variables
+          env:
+            - name: NODE_ENV
+              value: "production"
