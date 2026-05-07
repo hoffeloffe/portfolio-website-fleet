@@ -35,7 +35,7 @@ spec:
                 - arm64
       containers:
         - name: my-website
-          image: "hoffeloffe/my-portfolio:build-5"
+          image: "hoffeloffe/my-website:latest"
           ports:
             - containerPort: 3000
           # Temporarily remove all probes to see if container can start successfully
