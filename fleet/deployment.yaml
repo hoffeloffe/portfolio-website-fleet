@@ -35,11 +35,12 @@ spec:
                 - arm64
       containers:
         - name: my-website
-          image: "hoffeloffe/my-website:latest"
+          # Pinned by digest for reproducible, rollback-able deploys (corresponds to
+          # the image previously deployed as :latest). Update via CI when publishing.
+          image: "hoffeloffe/my-website@sha256:20532f44155e6b626fb14ffa9f9d077ec3db04371e183cf0f2e3c151ecff3edf"
           ports:
-            - containerPort: 3000
-          # Temporarily remove all probes to see if container can start successfully
-          # We'll add probes back after confirming basic functionality
+            - name: http
+              containerPort: 3000
           # Increased resources for Raspberry Pi
           resources:
             limits:
@@ -48,8 +49,21 @@ spec:
             requests:
               memory: "64Mi"
               cpu: "50m"
-          # Use this for debugging
-          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20
+            failureThreshold: 3
+          imagePullPolicy: IfNotPresent
           # Environment variables
           env:
             - name: NODE_ENV
