@@ -14,11 +14,12 @@ Namespace: `my-website`
 | Manifest | Resource | Notes |
 | --- | --- | --- |
 | [`fleet/deployment.yaml`](./fleet/deployment.yaml) | `Deployment` my-website | 1 replica, ARM node affinity, probes, requests + limits |
-| [`fleet/service.yaml`](./fleet/service.yaml) | `Service` my-website-service | ClusterIP, `80 -> 3000` |
+| [`fleet/service.yaml`](./fleet/service.yaml) | `Service` my-website-service | ClusterIP, `80 -> 80` |
 | [`fleet/ingress.yaml`](./fleet/ingress.yaml) | `Ingress` my-website-ingress | external host |
 | [`fleet/fleet.yaml`](./fleet/fleet.yaml) | Fleet bundle config | `defaultNamespace: my-website` |
 
-The app listens on port **3000** (`PORT=3000`). The image is **pinned by digest**
+The app listens on port **80** (the `hoffeloffe/my-website` image is nginx serving
+static files on port 80). The image is **pinned by digest**
 (not `:latest`) so deploys are reproducible and rollback-able.
 
 ## Raspberry Pi specifics
