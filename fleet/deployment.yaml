@@ -40,7 +40,7 @@ spec:
           image: "hoffeloffe/my-website@sha256:20532f44155e6b626fb14ffa9f9d077ec3db04371e183cf0f2e3c151ecff3edf"
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 80
           # Increased resources for Raspberry Pi
           resources:
             limits:
@@ -69,4 +69,4 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: PORT
-              value: "3000"  # Explicitly set the port in case app looks for this env var
+              value: "80"
